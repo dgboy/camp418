@@ -1,0 +1,14 @@
+{
+  "name": "camp418",
+  "version": "1.0.0",
+  "description": "Homework for Node.js from Lad",
+  "main": "task1.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "D.G",
+  "license": "ISC",
+  "dependencies": {
+    "readline-sync": "^1.4.10"
+  }
+}
