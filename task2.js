@@ -1,7 +1,6 @@
 const read = require('readline-sync');
 
 const monster = {
-
   name: "Лютый",
   maxHealth: 10,
   current: {
@@ -46,19 +45,32 @@ const monster = {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   },
   chooseMove() {
+    const NO_COOLDOWN_MOVE = 0;
     let id = this.random(0, this.moves.length - 1);
     
     if(this.current.cooldowns[id] != this.moves[id].cooldown) {
-      this.chooseMove();
-    } else {
-      this.current.move = this.moves[id];
-      this.current.move.id = id;
-      this.current.cooldowns[id] = 0;
+      id = NO_COOLDOWN_MOVE;
     }
-  }
+    
+    this.current.move = this.moves[id];
+    this.current.move.id = id;
+    this.current.cooldowns[id] = 0;
+
+    // this.movesMenu();
+  },
+  movesMenu() {
+    for (let i = 0; i < this.moves.length; i++) {
+      let ready = this.moves[i].cooldown == 0 || this.current.cooldowns[i] == this.moves[i].cooldown;
+      console.log(
+        `${ready ? `[${i}]` : ' X '} - ${this.moves[i].name} ` +
+        `\n\t(физ.ур: ${this.moves[i].physicalDmg}, маг.ур: ${this.moves[i].magicDmg}, ` +
+        `физ.защ: ${this.moves[i].physicArmorPercents}%, маг.защ: ${this.moves[i].magicArmorPercents}%, ` +
+        `кулдаун: ${!ready ? this.current.cooldowns[i] + ' / ' : ''}${this.moves[i].cooldown})\t`
+      );
+    }
+  },
 };
 const player = {
-
   name: "Евстафий",
   maxHealth: null,
   moves: [{
@@ -102,7 +114,8 @@ const player = {
   },
 
   init() {
-    console.log("\n\t====== ВЫБЕРИТЕ СЛОЖНОСТЬ (HPs) ======");
+    
+    console.log("\n========= ВЫБЕРИТЕ СЛОЖНОСТЬ (HPs) ===========");
     this.maxHealth = this.current.health = +read.question("$ Enter number: ");
     for (let i = 0; i < this.moves.length; i++) {
       this.current.cooldowns[i] = this.moves[i].cooldown || null;
@@ -112,7 +125,7 @@ const player = {
     for (let i = 0; i < this.moves.length; i++) {
       let ready = this.moves[i].cooldown == 0 || this.current.cooldowns[i] == this.moves[i].cooldown;
       console.log(
-        `[${ready ? i : 'X'}] - ${this.moves[i].name} ` +
+        `${ready ? `[${i}]` : ' X '} - ${this.moves[i].name} ` +
         `\n\t(физ.ур: ${this.moves[i].physicalDmg}, маг.ур: ${this.moves[i].magicDmg}, ` +
         `физ.защ: ${this.moves[i].physicArmorPercents}%, маг.защ: ${this.moves[i].magicArmorPercents}%, ` +
         `кулдаун: ${!ready ? this.current.cooldowns[i] + ' / ' : ''}${this.moves[i].cooldown})\t`
@@ -122,12 +135,15 @@ const player = {
   chooseMove() {
     this.movesMenu();
     console.log(`\n# Здоровье Евстафия: ${this.current.health} / ${this.maxHealth} HP`);
-    console.log(`# Здоровье Лютого: ${monster.current.health} / ${monster.maxHealth} HP`);
+    // console.log(`# Здоровье Лютого: ${monster.current.health} / ${monster.maxHealth} HP`);
 
     let id = +(read.question("\n$ Your choice: "));
 
-    if(this.current.cooldowns[id] != this.moves[id].cooldown) {
-      console.log("Мне пока не хватает выносливости. Лучше выбрать что-то другое.");
+    if(id < 0 || id >= this.moves.length) {
+      console.log("\n!!! Что-то я не помню, чтобы у меня была такая техника. !!!\n");
+      this.chooseMove();
+    } else if(this.moves[id].cooldown != 0 && this.current.cooldowns[id] != this.moves[id].cooldown) {
+      console.log("\n!!! Мне пока не хватает выносливости. Лучше выбрать что-то другое. !!!\n");
       this.chooseMove();
     } else {
       this.current.move = this.moves[id];
@@ -139,38 +155,57 @@ const player = {
 
 
 const storitellingSystem = {
-
   tellBeginningStory() {
-    console.log("\n\t====== ВСТУПЛЕНИЕ ======");
+    console.log("\n================ ВСТУПЛЕНИЕ ==================");
     console.log(
-      "Однажды, в полную ночь, возвращался Евстафий домой, что стоял подле леса, и думал о своём. " +
-      "В округе не было ни единой души, и не слышно было ни звука. Даже сверчков... " +
-      "'Странно.' - подумал Евстафий и напрягся, остановившись в середине пути. Постояв немного на месте он начал ощущать чьё-то присутсвие." +
-      "И только он начал принимать защитную стойку, как наблюдатель наконец проявил себя и тут же отправился в нападение."
+      "Однажды, в полную ночь, возвращался Евстафий домой, что стоял подле леса, и думал о своём.\n" +
+      "В округе не было ни единой души, и не было слышно почти ни звука. Даже стрекота цикад... \n" +
+      "'Странно.' - подумал Евстафий и напрягся, остановившись в пол пути от дома.\n" +
+      "Постояв немного на месте он начал ощущать чьё-то присутсвие.\n" +
+      "И только он начал принимать защитную стойку, как наблюдатель наконец проявил себя и тут же пошёл в нападение."
     );
-    console.log("\n\t====== НАЧАЛАСЬ БИТВА! ======");
+    console.log("\n============== НАЧАЛАСЬ БИТВА! ===============");
   },
   tellGoodEndStory() {
-    console.log("\n================= КОНЦОВКА =================");
+    console.log("================= ВЫ ПОБЕДИЛИ =================");
+    console.log("\n=================== КОНЦОВКА ==================");
     console.log(
-      "Однажды, в полную ночь, возвращался Евстафий домой, что стоял подле леса, и думал о своём. " +
-      "И только он начал принимать защитную стойку, как наблюдатель наконец проявил себя и тут же отправился в нападение."
+      "Евстафий вновь занёс свой коронный удар пяткой над противником и тот, уже измождённый, рушится на землю.\n" +
+      "Евстафий, тяжко отдышавшись после яростной битвы, начал быстренько залечивать свои раны.\n" +
+      "Но вдруг! Некогда лютый человекоподобный зверь постепенно начал обращаться в человека.\n" + 
+      "Евстафий впал в ступор. Увидев конечную форму, он не мог сказать и слова. Так как Лютый оказался его сыном!\n" + 
+      "Только он захотел было пасть в печали перед мёртвым сыном, как вдруг он услышал яростный вопль со стороны его дома.\n" +
+      "Не думая ни минуты, от тут же помчался в сторону дома, беспокоясь за остальную часть семьи.\n" +
+      "Запыхавшись, он добрался до своего всё ещё целого дома. Но когда он зашёл внутрь. Он увидел...\n" +
+      "\n\t     Евстафий: Потерявши всё\n" +
+      "\t\t[SOON 20.06.20]"
     );
-    // Евстафий добивает Лютого, но вдруг он начинает превращаться в человека
-    // Евстафий узнаёт в нём своего старшего брата
-    // - Не может быть... Лютый! ЛЮТЫ-Ы-ЫЙ!!!
-    // Евстафий 2: За брата за основу взято SOON [20.05.20]
+    console.log("\n================== КОНЕЦ ИГРЫ ==================\n");
+  },
+  tellDrawEndStory() {
+    console.log("==================== НИЧЬЯ ====================\n");
+    console.log("=================== КОНЦОВКА ==================");
+    console.log(
+      "Битва шла долго, до полного изнемождения. Противники шли нос в нос. Но в итоге оба устали так, что последующий удар стал решающим.\n" +
+      "Они приготовились, и пронеслась последняя пара смертельных ударов. Рев битвы исчез. Никто не смог уклониться.\n" +
+      "Вонзившись в друг друга, соперникам остовалось лишь наблюдать за угасанием жизни друг друга.\n" +
+      "Вскоре, поле сново накрыло безвучье, как и в самом начале истории."+ 
+      "Лишь ветер свистел, пролетая над полем, где сияла лужа полная крови, в который лежало два человека, не собладавших с силой друг друга."
+    );
+    console.log("\n================== КОНЕЦ ИГРЫ ==================\n");
   },
   tellBadEndStory() {
-    console.log("\n================= КОНЦОВКА =================");
+    console.log("================= ВЫ ПРОИГРАЛИ =================");
+    console.log("\n=================== КОНЦОВКА ===================");
     console.log(
-      "Однажды, в полную ночь, возвращался Евстафий домой, что стоял подле леса, и думал о своём. " +
-      "И только он начал принимать защитную стойку, как наблюдатель наконец проявил себя и тут же отправился в нападение."
+      "Острые когти врываются в сердце израненного Евстафия и он, прокашляв кровью, безжизненно падает на землю.\n" +
+      "Последнее, что успевает увидеть Евстафий, это лицо своего убийцы, наполненное какой-то неведомой печалью.\n" +
+      "Не успев проанализировать увиденное, сознание покидает его."
     );
+    console.log("\n================== КОНЕЦ ИГРЫ ==================\n");
   },
 }
 const battleSystem = {
-
   logUsing(battlerName, moveName) {
     console.log(`> ${battlerName} применяет технику '${moveName}'`);
   },
@@ -180,17 +215,15 @@ const battleSystem = {
   isExodus(battler1, battler2) {
     return battler1.current.health > 0 && battler2.current.health > 0
   },
-  getDamage(attacking, defending) {
-    this.current.damage = attacking.physicalDmg * (defending.physicArmorPercents / 100) + 
-      attacking.magicDmg * (defending.magicArmorPercents / 100);
-
-    return this.current.damage.toFixed(2);
-  },
   makeMove(battler) {
     battler.chooseMove();
     this.loadCooldowns(battler.current.cooldowns, battler.moves, battler.current.move.id);
     this.logUsing(battler.name, battler.current.move.name);
-
+  },
+  makeDamage(battler1, battler2) {
+    let damage = this.calcDamage(battler1.current.move, battler2.current.move);
+    battler2.current.health -= damage;
+    this.logDamaging(battler1.name, damage, battler2.name);
   },
   loadCooldowns(cooldowns, moves, curMoveId) {
     for(let i = 0; i < moves.length; i++) {
@@ -198,51 +231,39 @@ const battleSystem = {
         cooldowns[i]++;
       }
     }
+  },
+  calcDamage(attacking, defending) {
+    let phyDmg = attacking.physicalDmg - attacking.physicalDmg * (defending.physicArmorPercents / 100);
+    let magDmg = attacking.magicDmg - attacking.magicDmg * (defending.magicArmorPercents / 100);
+    let damage = (phyDmg + magDmg).toFixed(1);
+
+    return damage;
+  },
+  fight(player, monster) {
+    monster.init();
+
+    do {
+      this.makeMove(player);
+      this.makeMove(monster);
+      console.log();
+      this.makeDamage(player, monster);
+      this.makeDamage(monster, player);
+      console.log();
+    } while (this.isExodus(player, monster));
   }
 }
 
 
-//====================== START GAME LOGIC ===========================//
 
+//=== START GAME LOGIC ====//
 
 player.init();
-monster.init();
 
 storitellingSystem.tellBeginningStory();
+battleSystem.fight(player, monster);
 
-// battleSystem.start(player);
-// battleSystem.start(monster);
-
-do {
-  battleSystem.makeMove(player);
-  battleSystem.makeMove(monster);
-/*
-  player.curHealth -= battleSystem.getDamage(monster.curMove, player.curMove);
-  battleSystem.logDamaging(monster.name, monster.current.damage, player.name);
-  console.log();
-  monster.curHealth -= battleSystem.getDamage(player.curMove, monster.curMove);
-  battleSystem.logDamaging(player.name, player.current.damage, monster.name);
-*/
-} while (battleSystem.isExodus(player, monster));
-
-
-
-
-
-  // battleSystem.logUsing(monster.name, monster.curMove.name);
-  // battleSystem.logUsing(player.name, player.curMove.name);
-  // battleSystem.movesMenu(this.moves);
-  // console.log(`[ Здоровье Евстафия: ${this.curHealth} / ${this.maxHealth} HP ]`);
-  // console.log(`[ Здоровье Лютого: ${monster.curHealth} / ${monster.maxHealth} HP ]`);
-  // monster.curMove = monster.moves[battleSystem.random(0, monster.moves.length - 1)];
-  // console.log("################################################################\n");
-
-
-// ========== DO-LIST ==========
-  // 1. Дополнить меню всеми данными +
-  // 2. Реализовать учёт кулдауна +
-  // 3. Дописать концовки
-  // 4. Придумать куда лучше вынести начальную иницализацию кулдаунов
-  // 5. Решить нужен ли мне id навыка или нет +
-  // 6. Поправить логику выбора навыка у ИИ
-  // 7. Поправить работу функции вычисляющей урон
+if(player.current.health > 0) {
+  storitellingSystem.tellGoodEndStory();
+} else {
+  storitellingSystem.tellBadEndStory();
+}
