@@ -26,7 +26,7 @@ function getSelectQuestions(path, countQ) {
 }
 
 function readQuestion(file) {
-  return fs.readFileSync(file).toString().split('\r\n');
+  return fs.readFileSync(file).toString().split('\n');
 }
 
 function getQuiz(path) {
